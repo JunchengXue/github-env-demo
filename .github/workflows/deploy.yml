@@ -1,0 +1,16 @@
+name: env-test
+on:
+
+    workflow_dispatch:
+        inputs:
+            envName:
+                description: env of the action
+                default: dev
+                required: true
+jobs:
+    deployt-test:
+        runs-on: ubuntu-latest
+        steps:
+            -   name: echo input envName
+                run: |
+                    echo  ${{ github.event.inputs.envName || 'asdf.asdfsafas.asfddsa:/asdfsa:latest' }}
