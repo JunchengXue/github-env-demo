@@ -18,12 +18,18 @@ on:
 
 jobs:
     dev-build:
+        env:
+            TAG_LABEL: ${{ github.event.inputs.envName }}-HelloWorld
         runs-on: ubuntu-latest
         environment: dev
         steps:
             -   name: echo secrets
                 run: |
                     echo ${{ secrets.PARAM_ABC }} | base64
+
+            -   name: echo tag_label
+                run: |
+                    echo ${{ env.TAG_LABEL }}
 
             -   name: echo github tag
                 run: |
@@ -38,10 +44,10 @@ jobs:
                         latest
                         type=ref,event=branch
                         type=sha
-
             -   name: echo images
                 run: |
                     echo "${{ steps.meta.outputs.tags }}"
+
     dev-deploy:
         runs-on: ubuntu-latest
         if: github.event.inputs.envName != 'uat' || github.events.inputs.envName != 'prod'
