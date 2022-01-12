@@ -1,0 +1,73 @@
+name: web-relase
+on:
+    push:
+        branches:
+            - master
+        tags:
+            - web-release-*
+
+    workflow_dispatch:
+        inputs:
+            envName:
+                description: env of the action
+                default: dev
+                required: true
+            repoTag:
+                description: tag of docker image (used in uat, prod)
+                default: latest
+                required: false
+
+
+jobs:
+    dev-build:
+        runs-on: ubuntu-latest
+        environment: dev
+        steps:
+            -   name: echo secrets
+                run: |
+                    echo ${{ secrets.PARAM_ABC }} | base64
+
+            -   name: echo github tag
+                run: |
+                    echo ${{ github.ref_name }}
+
+            -   name: Docker meta
+                id: meta
+                uses: docker/metadata-action@v3
+                with:
+                    images: google/jdk
+                    tags: |
+                        latest
+                        type=ref,event=branch
+                        type=sha
+
+            -   name: echo images
+                run: |
+                    echo "${{ steps.meta.outputs.tags }}"
+    dev-deploy:
+        runs-on: ubuntu-latest
+        if: github.event.inputs.envName != 'uat' || github.events.inputs.envName != 'prod'
+        environment: dev
+        steps:
+            -   name: input repo tag is not empty
+                if: github.event.inputs.repoTag != ''
+                run: |
+                    echo "repo tag is not empty"
+                    echo "${{ github.event.inputs.repoTag }}"
+
+            -   name: input repo tag is empty
+                if: github.event.inputs.repoTag == ''
+                run: |
+                    echo "repo tag is empty"
+
+    uat-deploy:
+        runs-on: ubuntu-latest
+        if: github.event.inputs.envName == 'uat'
+        environment: uat
+        steps:
+            -   name: echo uat secrets
+                run: |
+                    echo ${{ secrets.PARAM_ABC }} | base64
+            -   name: echo docker iamge
+                run: |
+                    echo "google/jdk:${{ github.event.inputs.repoTag }}"
