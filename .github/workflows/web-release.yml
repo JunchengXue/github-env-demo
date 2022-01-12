@@ -1,8 +1,6 @@
 name: web-relase
 on:
     push:
-        branches:
-            - master
         tags:
             - web-release-*
 
