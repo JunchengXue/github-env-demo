@@ -1,0 +1,6 @@
+server:
+    port: 8080
+aws:
+    param:
+        abc: 200
+        xyz: abcd2234
