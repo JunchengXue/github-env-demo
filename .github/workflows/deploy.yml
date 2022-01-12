@@ -1,4 +1,4 @@
-name: env-test
+name: deploy-test
 on:
 
     workflow_dispatch:
