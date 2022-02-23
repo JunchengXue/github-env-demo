@@ -37,7 +37,6 @@ jobs:
                         type=sha
 
             -   name: Docker build and push
-                id: docker_build
                 uses: docker/build-push-action@v2
                 with:
                     file: Dockerfile
@@ -49,7 +48,6 @@ jobs:
 
             -   name: Docker build and push with tag
                 if: ${{ github.event.inputs.tag }}
-                id: docker_build
                 uses: docker/build-push-action@v2
                 with:
                     file: Dockerfile
