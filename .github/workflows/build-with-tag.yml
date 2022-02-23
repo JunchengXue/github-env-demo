@@ -14,6 +14,7 @@ jobs:
             -   name: check whether is tag
                 id: check-tag
                 run: |
+                    echo ${{ github.event.inputs.tag }}
                     if [ "${{ github.event.inputs.tag }}" == "" ]; then
                         echo ::set-output name=has-tag::false
                     else
