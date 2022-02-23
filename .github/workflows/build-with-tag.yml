@@ -18,7 +18,7 @@ jobs:
                     ref: refs/tags/api-release-1.1.0
 
             -   uses: actions/checkout@v2
-                if: ! github.event.inputs.tag
+                if: ${{ ! github.event.inputs.tag }}
                 with:
                     fetch-depth: 0
 
