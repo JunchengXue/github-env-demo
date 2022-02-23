@@ -11,16 +11,24 @@ jobs:
     dev-build:
         runs-on: ubuntu-latest
         steps:
+            -   name: check whether is tag
+                id: check-tag
+                run: |
+                    if [ "$github.event.inputs.tag" == "" ]; then
+                        echo ::set-output name=has-tag::false
+                    else
+                        echo ::set-output name=has-tag::true
+                    fi 
 
             -   uses: actions/checkout@v2
                 name: checkout with tag
-                if: ${{ github.event.inputs.tag != '' }}
+                if: ${{ steps.check-tag.outputs.has-tag}}
                 with:
                     ref: refs/tags/${{ github.event.inputs.tag }}
 
             -   uses: actions/checkout@v2
                 name: checkout HEAD
-                if: ${{ github.event.inputs.tag == '' || github.event.inputs.tag == null }}
+                if: ${{ ! steps.check-tag.outputs.has-tag}}
                 with:
                     fetch-depth: 0
 
