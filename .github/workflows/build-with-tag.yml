@@ -56,7 +56,7 @@ jobs:
                     file: Dockerfile
                     push: false
                     context: .
-                    tags: docker.io/test-host/test-repo:${{ env.GIT_SHORT_SHA }}
+                    tags: docker.io/test-host/test-repo:${{ github.event.inputs.tag }}
 
             -   name: docker ls
                 run: |
