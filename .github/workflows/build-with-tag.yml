@@ -13,6 +13,7 @@ jobs:
         steps:
 
             -   uses: actions/checkout@v2
+                if: ${{ github.event.inputs.tag }}
                 with:
                     ref: refs/tags/api-release-1.1.0
 
