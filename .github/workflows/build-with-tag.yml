@@ -26,6 +26,8 @@ jobs:
                 run: |
                     git_hash=$(git rev-parse --short HEAD) 
                     echo $git_hash
+                    echo "GIT_SHORT_SHA=$git_hash" >> $GITHUB_ENV
+                    echo "GIT_BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV 
 
             -   name: Docker meta
                 id: meta
