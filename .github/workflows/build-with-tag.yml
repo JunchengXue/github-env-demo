@@ -20,9 +20,15 @@ jobs:
                         echo ::set-output name=has-tag::true
                     fi 
 
+            -   name: output has-tag
+                run: |
+                    echo ${{ steps.check-tag.outputs.has-tag }}
+                    
+            
+
             -   uses: actions/checkout@v2
                 name: checkout with tag
-                if: ${{ steps.check-tag.outputs.has-tag}}
+                if: ${{ steps.check-tag.outputs.has-tag }}
                 with:
                     ref: refs/tags/${{ github.event.inputs.tag }}
 
