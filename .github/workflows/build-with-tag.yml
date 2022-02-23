@@ -57,3 +57,7 @@ jobs:
                     push: false
                     context: .
                     tags: docker.io/test-host/test-repo:${{ env.GIT_SHORT_SHA }}
+
+            -   name: docker ls
+                run: |
+                    docker images
