@@ -1,17 +1,58 @@
 name: build-with-tag
 on:
     workflow_dispatch:
-
+        inputs:
+            tag:
+                required: false
+                default: api-release-1.1.0
+                description: The tag to use for the build
 
 jobs:
     dev-build:
         runs-on: ubuntu-latest
         steps:
             -   uses: actions/checkout@v2
+                if: ${{ github.event.inputs.tag }}
                 with:
-                    ref: 'refs/tags/web-release-1.0.0'
+                    ref: refs/tags/${{ github.event.inputs.tag }}
+
+            -   uses: actions/checkout@v2
+                if: !${{ github.event.inputs.tag }}
+                with:
+                    fetch-depth: 0
 
             -   name: github environment
                 run: |
                     git_hash=$(git rev-parse --short HEAD) 
                     echo $git_hash
+
+            -   name: Docker meta
+                id: meta
+                uses: docker/metadata-action@v3
+                with:
+                    images: docker.io/test-host/test-repo
+                    tags: |
+                        latest
+                        type=ref,event=branch
+                        type=sha
+
+            -   name: Docker build and push
+                id: docker_build
+                uses: docker/build-push-action@v2
+                with:
+                    file: Dockerfile
+                    build-args: |
+                        GIT_SHA=${{ env.GIT_SHORT_SHA }}
+                    push: false
+                    context: .
+                    tags: ${{ steps.meta.outputs.tags }}
+
+            -   name: Docker build and push with tag
+                if: !${{ github.event.inputs.tag }}
+                id: docker_build
+                uses: docker/build-push-action@v2
+                with:
+                    file: Dockerfile
+                    push: false
+                    context: .
+                    tags: docker.io/test-host/test-repo:${{ env.GIT_SHORT_SHA }}
