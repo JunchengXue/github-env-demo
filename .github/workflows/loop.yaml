@@ -1,18 +1,30 @@
 name: loop
-on: push
+on:
+    workflow_dispatch:
+        inputs:
+            envName:
+                description: environment [dev,uat,prod]
+                default: dev
+                required: true
+            project:
+                description: project name [tidy3d-1.0.1 ...]
+                required: true
 jobs:
     job1:
         runs-on: ubuntu-latest
+        env:
+            ENVIRONMENT: ${{ github.event.inputs.envName || 'dev' }}
+            PROJECT: ${{ github.event.inputs.project }}
         outputs:
             matrix: ${{ steps.set-matrix.outputs.matrix }}
         steps:
-            - id: set-matrix
-              run: echo "::set-output name=matrix::{\"include\":[{\"project\":\"foo\",\"config\":\"Debug\"},{\"project\":\"bar\",\"config\":\"Release\"}]}"
+            -   id: set-matrix
+                run: echo "::set-output name=matrix::{\"include\":[{\"project\":\"foo\",\"config\":\"Debug\"},{\"project\":\"bar\",\"config\":\"Release\"}]}"
     job2:
         needs: job1
         runs-on: ubuntu-latest
         strategy:
             matrix: ${{fromJson(needs.job1.outputs.matrix)}}
         steps:
-            - run: echo ${{ matrix.project }}
-            - run: echo ${{ matrix.config }}
+            -   run: echo ${{ matrix.project }}
+            -   run: echo ${{ matrix.config }}
