@@ -1,8 +1,5 @@
 name: build-with-tag
 on:
-    push:
-        branches:
-            - master
     workflow_dispatch:
         inputs:
             tag:
