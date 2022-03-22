@@ -1,0 +1,103 @@
+name: pen-webapi-deploy
+on:
+    workflow_dispatch:
+        inputs:
+            project:
+                description: project [admin,flow360,portal,tidy3d]
+                default: admin
+                required: true
+            envName:
+                description: environment [dev,uat,prod]
+                default: dev
+                required: true
+            repoTag:
+                description: repoTag
+                default: latest
+                required: true
+
+jobs:
+    pen-webapi-deploy:
+        timeout-minutes: 15
+        runs-on: ubuntu-latest
+        environment: ${{ github.event.inputs.envName || 'dev' }}
+        env:
+            ENVIRONMENT: ${{ github.event.inputs.envName || 'dev' }}
+            REPO_TAG: ${{ github.event.inputs.repoTag || 'latest' }}
+        steps:
+            -   name: echo github inputs
+                run: echo '${{ toJSON(github.event.inputs) }}'
+
+            -   name: get registry & region by env
+                run: |
+                    case ${{ env.ENVIRONMENT }} in
+                        dev)
+                        echo "dev"
+                        echo "REGISTRY=343549021813.dkr.ecr.us-east-1.amazonaws.com" >> $GITHUB_ENV
+                        echo "AWS_REGION=us-east-1" >> $GITHUB_ENV
+                        ;;
+                        uat)
+                        echo "REGISTRY=528446015890.dkr.ecr.us-gov-west-1.amazonaws.com" >> $GITHUB_ENV
+                        echo "AWS_REGION=us-gov-west-1" >> $GITHUB_ENV
+                        ;;
+                        prod)
+                        echo "REGISTRY=528446015890.dkr.ecr.us-gov-west-1.amazonaws.com" >> $GITHUB_ENV
+                        echo "AWS_REGION=us-gov-west-1" >> $GITHUB_ENV
+                        ;;
+                    esac
+
+            -   name: get cluster config variables
+                run: |
+                    case ${{ github.event.inputs.project }} in
+                       admin)
+                       echo "REPO_NAME=simcloud-rest-service/admin-webapi" >> $GITHUB_ENV
+                       prefix="pen-simcloud-admin-api"
+                       ;;
+                       flow360)
+                       echo "REPO_NAME=simcloud-rest-service/flow360-webapi" >> $GITHUB_ENV
+                       prefix="pen-simcloud-flow360-api"
+                       ;;
+                       portal)
+                       echo "REPO_NAME=simcloud-rest-service/portal-webapi" >> $GITHUB_ENV
+                       prefix="pen-simcloud-portal-api"
+                       ;;
+                       tidy3d)
+                       echo "REPO_NAME=simcloud-rest-service/tidy3d-webapi" >> $GITHUB_ENV
+                       prefix="pen-simcloud-tidy3d-api"
+                       ;;
+                    esac
+                    echo "CLUSTER=pen-simcloud-cluster-Cluster" >> $GITHUB_ENV
+                    echo "CONTAINER=$prefix-Container" >> $GITHUB_ENV
+                    echo "SVC=$prefix-Service" >> $GITHUB_ENV
+                    echo "TASK=$prefix-Task" >> $GITHUB_ENV
+
+            -   name: echo action used variables
+                run: |
+                    echo '${{  toJSON(env) }}'
+
+            -   name: Configure AWS credentials
+                uses: aws-actions/configure-aws-credentials@v1
+                with:
+                    aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+                    aws-secret-access-key: ${{ secrets.AWS_ACCESS_SECRET }}
+                    aws-region: ${{ env.AWS_REGION }}
+
+
+            -   name: Download task definition
+                run: |
+                    aws ecs describe-task-definition --task-definition ${{ env.TASK }} --query taskDefinition > task-definition.json 
+
+            -   name: Fill in the new image ID in the Amazon ECS task definition
+                id: task-def
+                uses: aws-actions/amazon-ecs-render-task-definition@v1
+                with:
+                    task-definition: task-definition.json
+                    container-name: ${{ env.CONTAINER }}
+                    image: ${{env.REGISTRY}}/${{ env.REPO_NAME }}:${{ env.REPO_TAG }}
+
+            -   name: Deploy Amazon ECS task definition
+                uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+                with:
+                    task-definition: ${{ steps.task-def.outputs.task-definition }}
+                    service: ${{ env.SVC }}
+                    cluster: ${{ env.CLUSTER }}
+                    wait-for-service-stability: true
