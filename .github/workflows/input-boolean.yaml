@@ -1,4 +1,4 @@
-name: env-test
+name: input-boolean
 on:
     workflow_dispatch:
         inputs:
