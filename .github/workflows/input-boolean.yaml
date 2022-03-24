@@ -27,11 +27,11 @@ jobs:
             invokeDeploy: ${{ github.event.inputs.invokeDeploy }}
         steps:
             -   name: echo input envName
-                if: ${{ env.ENVIRONMENT == 'dev' || github.event.inputs.invokeDeploy == 'false' }}
+                if: ${{ env.ENVIRONMENT == 'dev' || github.event.inputs.invokeDeploy == 'true' }}
                 run: |
                     echo  ${{ github.event.inputs.envName || 'asdf.asdfsafas.asfddsa:/asdfsa:latest' }}
 
             -   name: echo input envName
-                if: ${{ env.ENVIRONMENT == 'dev' || env.invokeDeploy == 'false' }}
+                if: ${{ env.ENVIRONMENT == 'dev' || env.invokeDeploy == 'true' }}
                 run: |
                     echo  ${{ github.event.inputs.envName || 'asdf.asdfsafas.asfddsa:/asdfsa:latest' }}
