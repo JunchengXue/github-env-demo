@@ -1,0 +1,37 @@
+name: env-test
+on:
+    workflow_dispatch:
+        inputs:
+            project:
+                description: project of the action
+                required: true
+            envName:
+                description: env of the action
+                default: dev
+                required: true
+            tag:
+                description: build with tag
+                required: false
+            invokeDeploy:
+                description: whether invoke deploy
+                default: 'false'
+                required: false
+
+
+jobs:
+    dev-build:
+        runs-on: ubuntu-latest
+        environment: dev
+        env:
+            TAG_LABEL: ${{ github.event.inputs.envName }}-HelloWorld
+            invokeDeploy: ${{ github.event.inputs.invokeDeploy }}
+        steps:
+            -   name: echo input envName
+                if: ${{ env.ENVIRONMENT == 'dev' || github.event.inputs.invokeDeploy == 'false' }}
+                run: |
+                    echo  ${{ github.event.inputs.envName || 'asdf.asdfsafas.asfddsa:/asdfsa:latest' }}
+
+            -   name: echo input envName
+                if: ${{ env.ENVIRONMENT == 'dev' || env.invokeDeploy == 'false' }}
+                run: |
+                    echo  ${{ github.event.inputs.envName || 'asdf.asdfsafas.asfddsa:/asdfsa:latest' }}
