@@ -24,6 +24,7 @@ jobs:
         environment: dev
         env:
             TAG_LABEL: ${{ github.event.inputs.envName }}-HelloWorld
+            ENVIRONMENT: ${{ github.event.inputs.envName }}
             invokeDeploy: ${{ github.event.inputs.invokeDeploy }}
         steps:
             -   name: echo github inputs

@@ -50,22 +50,22 @@ jobs:
                     case ${{ github.event.inputs.project }} in
                        admin)
                        echo "REPO_NAME=simcloud-rest-service/admin-webapi" >> $GITHUB_ENV
-                       prefix="fg-simcloud-admin-api-dev"
+                       prefix="fg-simcloud-admin-api-${{ env.ENVIRONMENT }}"
                        ;;
                        flow360)
                        echo "REPO_NAME=simcloud-rest-service/flow360-webapi" >> $GITHUB_ENV
-                       prefix="fg-simcloud-flow360-api-dev"
+                       prefix="fg-simcloud-flow360-api-${{ env.ENVIRONMENT }}"
                        ;;
                        portal)
                        echo "REPO_NAME=simcloud-rest-service/portal-webapi" >> $GITHUB_ENV
-                       prefix="fg-simcloud-portal-api-dev"
+                       prefix="fg-simcloud-portal-api-${{ env.ENVIRONMENT }}"
                        ;;
                        tidy3d)
                        echo "REPO_NAME=simcloud-rest-service/tidy3d-webapi" >> $GITHUB_ENV
-                       prefix="fg-simcloud-tidy3d-api-dev"
+                       prefix="fg-simcloud-tidy3d-api-${{ env.ENVIRONMENT }}"
                        ;;
                     esac
-                    echo "CLUSTER=simcloud-cluster-dev-Cluster" >> $GITHUB_ENV
+                    echo "CLUSTER=simcloud-cluster-${{ env.ENVIRONMENT }}-Cluster" >> $GITHUB_ENV
                     echo "CONTAINER=$prefix-Container" >> $GITHUB_ENV
                     echo "SVC=$prefix-Service" >> $GITHUB_ENV
                     echo "TASK=$prefix-Task" >> $GITHUB_ENV
