@@ -47,7 +47,7 @@ jobs:
 
             -   id: set-matrix
                 run: |
-                    echo '::set-output name=matrix::{"include":[{"runner":"inhouse-deploy","solver_folder":"/sharedssd/tidy3d_solver",""},{"runner":"boston","solver_folder":""}]}'
+                    echo '::set-output name=matrix::{"include":[{"runner":"inhouse-deploy","solver_folder":"/sharedssd/tidy3d_solver"},{"runner":"boston","solver_folder":"/shared/sss"}]}'
 
     output-matrix:
         needs: [ setup-build-matrix ]
