@@ -17,7 +17,7 @@ jobs:
             matrix: ${{ steps.set-matrix.outputs.matrix }}
         steps:
             -   id: set-matrix
-#                run: echo "::set-output name=matrix::{\"include\":[{\"project\":\"foo\",\"config\":\"Debug\"},{\"project\":\"bar\",\"config\":\"Release\"}]}"
+                #                run: echo "::set-output name=matrix::{\"include\":[{\"project\":\"foo\",\"config\":\"Debug\"},{\"project\":\"bar\",\"config\":\"Release\"}]}"
                 run: echo '::set-output name=matrix::{"include":[{"project":"foo","config":"Debug"},{"project":"bar","config":"Release"}]}'
 
     job2:
@@ -47,138 +47,51 @@ jobs:
 
             -   id: set-matrix
                 run: |
-                    echo '::set-output name=matrix::{"include":[{"runner":"inhouse-deploy","solver_folder":"/sharedssd/tidy3d_solver"},{"runner":"boston","solver_folder":"\\asf\\abc"}]}'
+                    echo '::set-output name=matrix::{"include":[{"runner":"inhouse-deploy","solver_folder":"/sharedssd/tidy3d_solver",""},{"runner":"boston","solver_folder":""}]}'
 
     output-matrix:
         needs: [ setup-build-matrix ]
-        runs-on: ${{ matrix.runner }}
+        runs-on: ubuntu-latest
         environment: ${{ github.event.inputs.envName || 'dev' }}
         strategy:
             matrix: ${{fromJson(needs.setup-build-matrix.outputs.matrix)}}
         steps:
-            -  name: echo
-               run: |
-                   echo "${{ matrix.runner }}"
-                   echo "${{ matrix.solver_folder }}"
-            
-            
+            -   uses: actions/checkout@v3
+                name: checkout HEAD
+                if: ${{ !github.event.inputs.tag }}
+                with:
+                    submodules: recursive
 
+            -   uses: actions/checkout@v3
+                name: checkout with tag
+                if: ${{ github.event.inputs.tag }}
+                with:
+                    submodules: recursive
+                    token: ${{ secrets.ACCESS_TOKEN }}
+                    ref: refs/tags/${{ github.event.inputs.tag }}
 
-#    config-aws:
-#        runs-on: ubuntu-latest
-#        outputs:
-#            registry: ${{ steps.set-aws.outputs.registry }}
-#            region: ${{ steps.set-aws.outputs.region }}
-#        env:
-#            ENVIRONMENT: ${{ github.event.inputs.envName || 'dev' }}
-#        steps:
-#            -   name: get registry & region by env
-#                run: |
-#                    case ${{ env.ENVIRONMENT }} in
-#                        dev)
-#                        echo "dev"
-#                        echo "REGISTRY=343549021813.dkr.ecr.us-east-1.amazonaws.com" >> $GITHUB_ENV
-#                        echo "AWS_REGION=us-east-1" >> $GITHUB_ENV
-#                        ;;
-#                        uat)
-#                        echo "REGISTRY=528446015890.dkr.ecr.us-gov-west-1.amazonaws.com" >> $GITHUB_ENV
-#                        echo "AWS_REGION=us-gov-west-1" >> $GITHUB_ENV
-#                        ;;
-#                        preprod)
-#                        echo "REGISTRY=528446015890.dkr.ecr.us-gov-west-1.amazonaws.com" >> $GITHUB_ENV
-#                        echo "AWS_REGION=us-gov-west-1" >> $GITHUB_ENV
-#                        ;;
-#                        prod)
-#                        echo "REGISTRY=528446015890.dkr.ecr.us-gov-west-1.amazonaws.com" >> $GITHUB_ENV
-#                        echo "AWS_REGION=us-gov-west-1" >> $GITHUB_ENV
-#                        ;;
-#                    esac
-#
-#            -   id: set-aws
-#                run: |
-#                    echo "::set-output name=registry::${{ env.REGISTRY }}"
-#                    echo "::set-output name=region::${{ env.AWS_REGION }}"
-#
-#    webapi-build:
-#        needs: [ config-aws, setup-build-matrix ]
-#        runs-on: ubuntu-latest
-#        environment: ${{ github.event.inputs.envName || 'dev' }}
-#        strategy:
-#            matrix:
-#                project: ${{fromJson(needs.setup-build-matrix.outputs.matrix)}}
-#        env:
-#            PROJECT: ${{ matrix.project }}
-#            ENVIRONMENT: ${{ github.event.inputs.envName || 'dev' }}
-#            REGISTRY: ${{ needs.config-aws.outputs.registry }}
-#            AWS_REGION: ${{ needs.config-aws.outputs.region }}
-#            INVOKE_DEPLOY: ${{ github.event.inputs.invokeDeploy || 'false' }}
-#        steps:
-#            -   uses: actions/checkout@v2
-#                name: checkout HEAD
-#                if: ${{ ! github.event.inputs.tag }}
-#
-#            -   uses: actions/checkout@v2
-#                name: checkout with tag
-#                if: ${{ github.event.inputs.tag }}
-#                with:
-#                    ref: refs/tags/${{ github.event.inputs.tag }}
-#
-#            -   name: default tag is latest
-#                run: |
-#                    echo "REPO_TAG=latest" >> $GITHUB_ENV
-#
-#            -   name: git tag
-#                if: ${{ github.event.inputs.tag }}
-#                run: |
-#                    tag=$(echo ${{ github.event.inputs.tag }} | awk '{split($0,a,"/"); print a[2]}')
-#                    echo "GIT_TAG=$tag" >> $GITHUB_ENV
-#                    echo "REPO_TAG=$tag" >> $GITHUB_ENV
-#
-#            -   name: git environment
-#                run: |
-#                    git_hash=$(git rev-parse --short HEAD)
-#                    echo "GIT_SHORT_SHA=$git_hash" >> $GITHUB_ENV
-#                    echo "GIT_BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
-#
-#            -   run: |
-#                    echo "::notice ::GIT_SHORT_SHA: ${{ env.GIT_SHORT_SHA }}"
-#                    echo "::notice ::GIT_BRANCH : ${{ env.GIT_BRANCH }}"
-#
-#            -   name: echo action used variables
-#                run: |
-#                    echo '${{  toJSON(env) }}'
-#
-#            -   name: Set up JDK 11
-#                uses: actions/setup-java@v1
-#                with:
-#                    java-version: 11
-#
-#            -   name: Cache Gradle packages
-#                uses: actions/cache@v2
-#                with:
-#                    path: ~/.gradle/caches
-#                    key: ${{ runner.os }}-${{ hashFiles('**/*.gradle') }}
-#
-#            -   name: Configure AWS credentials
-#                uses: aws-actions/configure-aws-credentials@v1
-#                with:
-#                    aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-#                    aws-secret-access-key: ${{ secrets.AWS_ACCESS_SECRET }}
-#                    aws-region: ${{ env.AWS_REGION }}
-#
-#            -   name: Login to Amazon ECR
-#                id: login-ecr
-#                uses: aws-actions/amazon-ecr-login@v1
-#
-#            -   name: Build jar
-#                run: |
-#                    GIT_SHA=${{ env.GIT_SHORT_SHA }} GIT_BRANCH=${{ env.GIT_BRANCH }} REGISTRY=${{ env.REGISTRY }} GIT_TAG=${{ env.GIT_TAG }} PROJECT=${{ env.PROJECT }} make build-webapi-image
-#                    GIT_SHA=${{ env.GIT_SHORT_SHA }} GIT_BRANCH=${{ env.GIT_BRANCH }} REGISTRY=${{ env.REGISTRY }} GIT_TAG=${{ env.GIT_TAG }} PROJECT=${{ env.PROJECT }} make push-image
-#
-#            -   name: Invoke deploy workflow
-#                if: ${{ env.ENVIRONMENT == 'dev' || env.INVOKE_DEPLOY == 'true' }}
-#                uses: benc-uk/workflow-dispatch@v1
-#                with:
-#                    workflow: webapi-deploy
-#                    token: ${{ secrets.USER_GITHUB_TOKEN }}
-#                    inputs: '{"envName":"${{env.ENVIRONMENT}}","project":"${{env.PROJECT}}","repoTag":"${{env.REPO_TAG}}"}'
+            -   name: create version label for git tag
+                if: ${{ github.event.inputs.tag }}
+                run: |
+                    tag=$(echo ${{ github.event.inputs.tag }} | rev | cut -d/ -f1 | rev)
+                    echo "GIT_TAG=$tag" >> $GITHUB_ENV
+                    echo "REPO_TAG=$tag" >> $GITHUB_ENV
+                    echo "BUILD_VERSION=$tag" >> $GITHUB_ENV
+                    git_hash=$(git rev-parse --short HEAD)
+                    echo "GIT_SHORT_SHA=$git_hash" >> $GITHUB_ENV
+                    echo "GIT_BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+
+            -   run: echo $GITHUB_PATH
+            -   name: Setup dependencies
+                run: |
+                    echo "/usr/local/cuda/bin" >> $GITHUB_PATH
+                    echo "TIDY3D_PYTHON=/opt/python3.10/bin" >> $GITHUB_ENV
+
+            -   run: echo $GITHUB_PATH
+
+            -   name: create folder for solver version
+                run: mkdir -p ${{matrix.solver_folder}}/${{ env.BUILD_VERSION }}
+
+            -   name: Build
+                if: ${{ steps.get_version.outputs.VERSION != ''}}
+                run: bash scripts/build_release.sh ${{matrix.solver_folder}}/${{ env.BUILD_VERSION }}
