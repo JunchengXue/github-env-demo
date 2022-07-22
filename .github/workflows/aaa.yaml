@@ -81,13 +81,12 @@ jobs:
                     echo "GIT_SHORT_SHA=$git_hash" >> $GITHUB_ENV
                     echo "GIT_BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
-            -   run: echo $GITHUB_PATH
-            -   name: Setup dependencies
-                run: |
-                    echo "/usr/local/cuda/bin" >> $GITHUB_PATH
-                    echo "TIDY3D_PYTHON=/opt/python3.10/bin" >> $GITHUB_ENV
-
-            -   run: echo "$GITHUB_PATH"
+            -   name: Setup cuda-bin
+                if: ${{ matrix.cuda }}
+                run: echo "${{matrix.cuda}}" >> $GITHUB_PATH
+            -   name: Setup mpi-bin
+                if: ${{ matrix.mpi }}
+                run: echo "${{matrix.mpi}}" >> $GITHUB_PATH
 
 #            -   name: create folder for solver version
 #                run: mkdir -p ${{matrix.solver_folder}}/${{ env.BUILD_VERSION }}
