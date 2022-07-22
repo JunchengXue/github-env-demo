@@ -3,8 +3,9 @@ on:
     workflow_dispatch:
         inputs:
             runners:
-                description: environment [cloud-aws,cloud-google,cloud-oracle,inhouse-base,inhouse-boston,inhouse-dev,inhouse-multinode,all]
-                required: false
+                description: environment [inhouse-deploy,dev;inhouse-deploy,prod;bos-inhouse-deploy;gcloud-deploy;oracle-deploy;aws-deploy"]
+                default: inhouse-boston,dev
+                required: true
             tag:
                 description: build with tag. if no tag provide, will use latest of select branch to build
                 required: false
