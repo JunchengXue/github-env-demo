@@ -18,19 +18,21 @@ jobs:
         steps:
             -   name: notice
                 run: |
-                    echo "::notice ::environment: ${{github.event.inputs.runners}}"
+                    echo "::notice ::runners: ${{github.event.inputs.runners}}"
                     echo "::notice ::tag: ${{github.event.inputs.tag}}"
 
-#            -   id: set-matrix
-#                run: |
-#                    if [[ "${{ github.event.inputs.runners }}" != '' ]]; then
-#                        runners="${{ github.event.inputs.runners }}"
-#                        groups=$(echo -n $versions | jq -cRs 'split(";")')
-#                        echo $groups
-#                        echo "::set-output name=matrix::$groups"
-#                    else
-#                        echo '::set-output name=matrix::[["inhouse-deploy","dev"],"bos-inhouse-deploy","oracle-deploy"]'
-#                    fi
+            -   id: set-matrix
+                run: |
+                    if [[ "${{ github.event.inputs.runners }}" != '' ]]; then
+                        runners="${{ github.event.inputs.runners }}"
+                        groups=$(echo -n $versions | jq -cRs 'split(";")')
+                        echo "?????"
+                        echo $groups
+                        echo "::set-output name=matrix::$groups"
+                    else
+                        echo "++++++??"
+                        echo '::set-output name=matrix::[["inhouse-deploy","dev"],"bos-inhouse-deploy","oracle-deploy"]'
+                    fi
             -   id: set-matrix
                 run: |
                     echo '::set-output name=matrix::[["inhouse-deploy","dev"],"bos-inhouse-deploy","oracle-deploy"]'
