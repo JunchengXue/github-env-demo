@@ -47,7 +47,7 @@ jobs:
 
             -   id: set-matrix
                 run: |
-                    echo '::set-output name=matrix::{\"include\":[{"runner":"inhouse","solver_folder":"\sharedssd"},{"runner":"boston","solver_folder":"\shared_data\sfs\asfd"}]}'
+                    echo '::set-output name=matrix::{"include":[{"runner":"inhouse","solver_folder":"sharedssd"},{"runner":"boston","solver_folder":"asf"}]}'
 
     output-matrix:
         needs: [ setup-build-matrix ]
