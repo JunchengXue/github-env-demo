@@ -4,7 +4,6 @@ on:
         inputs:
             runners:
                 description: environment [cloud-aws,cloud-google,cloud-oracle,inhouse-base,inhouse-boston,inhouse-dev,inhouse-multinode,all]
-                default: inhouse-boston,cloud-google
                 required: false
             tag:
                 description: build with tag. if no tag provide, will use latest of select branch to build
