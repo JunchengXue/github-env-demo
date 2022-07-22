@@ -33,6 +33,9 @@ jobs:
                       jq -c '.include' ${{env.RUNNER_CONFIG }} | while read i; do
                       runner=$(echo $i | jq -r '.runner')
                       echo $runner
+                      echo '::set-output name=matrix::${{env.RUNNER_CONFIG}}'
+                    
+                      
                       if [ "$version" == "$target_version" ]; then
                         folder=$(echo $i | jq -r '.folder')
                         if [ "${version:0:7}" == 'tidy3d-' ]; then
@@ -46,8 +49,6 @@ jobs:
                           exit 1
                         fi
                       fi
-                    done
-                        echo '::set-output name=matrix::{'
                     fi
 
     output-matrix:
