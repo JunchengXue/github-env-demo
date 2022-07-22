@@ -21,35 +21,46 @@ jobs:
                     echo "::notice ::environment: ${{github.event.inputs.runners}}"
                     echo "::notice ::tag: ${{github.event.inputs.tag}}"
 
-            -   name: echo json
-                run: |
-                    echo 'RUNNER_CONFIG={"include": [{"runner": "inhouse-deploy","solver_folder": "/sharedssd/tidy3d_solver"},{"runner": "bos-inhouse-deploy","solver_folder": "/shared_data/tidy3d","cuda":"/usr/local/cuda/bin","mpi": "/opt/mvapich2/gdr/2.3.6/no-mpittool/no-openacc/cuda11.3/mofed5.4/mpirun/gnu8.4.1/bin"},{"runner": "gcloud-deploy","solver_folder": "/sharedssd/tidy3d","cuda":"/usr/local/cuda/bin"},{"runner": "oracle-deploy","solver_folder": "/sharedssd/tidy3d","cuda":"/usr/local/cuda/bin","mpi": "/opt/mvapich2/gdr/2.3.7pre/no-mpittool/no-openacc/cuda11.4/mofed5.5/mpirun/gnu9.3.0/bin"},{"runner": "aws-deploy","solver_folder": "/shared_data/tidy3d","cuda":"/usr/local/cuda/bin"}]}' >> $GITHUB_ENV
-
             -   id: set-matrix
                 run: |
                     if [[ "${{ github.event.inputs.runners }}" == '' ]]; then
-                        echo '::set-output name=matrix::${{env.RUNNER_CONFIG}}'
+                        runners="${{ github.event.inputs.runners }}"
+                        groups=$(echo -n $versions | jq -cRs 'split(";")')
+                        echo "::set-output name=matrix::$groups"
                     else
-                      jq -c '.include' ${{env.RUNNER_CONFIG }} | while read i; do
-                      runner=$(echo $i | jq -r '.runner')
-                      echo $runner
-                      echo '::set-output name=matrix::${{env.RUNNER_CONFIG}}'
-                    
-                      
-                      if [ "$version" == "$target_version" ]; then
-                        folder=$(echo $i | jq -r '.folder')
-                        if [ "${version:0:7}" == 'tidy3d-' ]; then
-                          tag_version="v${version:7}"
-                          echo "clone $tag_version to $folder"
-                          echo "FOLDER=$folder" >>$GITHUB_ENV
-                          git clone https://$GH\_ACCESS\_TOKEN@github.com/flexcompute/tidy3d.git "./$folder/$version"
-                          exit 0
-                        else
-                          echo "version does not start with tidy3d-"
-                          exit 1
-                        fi
-                      fi
+                        echo '::set-output name=matrix::[["inhouse-deploy","dev"],"bos-inhouse-deploy","oracle-deploy"]'
                     fi
+
+#            -   name: echo json
+#                run: |
+#                    echo 'RUNNER_CONFIG={"include": [{"runner": "inhouse-deploy","solver_folder": "/sharedssd/tidy3d_solver"},{"runner": "bos-inhouse-deploy","solver_folder": "/shared_data/tidy3d","cuda":"/usr/local/cuda/bin","mpi": "/opt/mvapich2/gdr/2.3.6/no-mpittool/no-openacc/cuda11.3/mofed5.4/mpirun/gnu8.4.1/bin"},{"runner": "gcloud-deploy","solver_folder": "/sharedssd/tidy3d","cuda":"/usr/local/cuda/bin"},{"runner": "oracle-deploy","solver_folder": "/sharedssd/tidy3d","cuda":"/usr/local/cuda/bin","mpi": "/opt/mvapich2/gdr/2.3.7pre/no-mpittool/no-openacc/cuda11.4/mofed5.5/mpirun/gnu9.3.0/bin"},{"runner": "aws-deploy","solver_folder": "/shared_data/tidy3d","cuda":"/usr/local/cuda/bin"}]}' >> $GITHUB_ENV
+#
+
+#            -   id: set-matrix
+#                run: |
+#                    if [[ "${{ github.event.inputs.runners }}" == '' ]]; then
+#                        echo '::set-output name=matrix::${{env.RUNNER_CONFIG}}'
+#                    else
+#                      jq -c '.include' ${{env.RUNNER_CONFIG }} | while read i; do
+#                      runner=$(echo $i | jq -r '.runner')
+#                      echo $runner
+#                      echo '::set-output name=matrix::${{env.RUNNER_CONFIG}}'
+#
+#
+#                      if [ "$version" == "$target_version" ]; then
+#                        folder=$(echo $i | jq -r '.folder')
+#                        if [ "${version:0:7}" == 'tidy3d-' ]; then
+#                          tag_version="v${version:7}"
+#                          echo "clone $tag_version to $folder"
+#                          echo "FOLDER=$folder" >>$GITHUB_ENV
+#                          git clone https://$GH\_ACCESS\_TOKEN@github.com/flexcompute/tidy3d.git "./$folder/$version"
+#                          exit 0
+#                        else
+#                          echo "version does not start with tidy3d-"
+#                          exit 1
+#                        fi
+#                      fi
+#                    fi
 
     output-matrix:
         needs: [ setup-build-matrix ]
