@@ -11,47 +11,48 @@ on:
                 required: false
 
 jobs:
-    job1:
-        runs-on: ubuntu-latest
-        outputs:
-            matrix: ${{ steps.set-matrix.outputs.matrix }}
-        steps:
-            -   id: set-matrix
-                #                run: echo "::set-output name=matrix::{\"include\":[{\"project\":\"foo\",\"config\":\"Debug\"},{\"project\":\"bar\",\"config\":\"Release\"}]}"
-                run: echo '::set-output name=matrix::{"include":[{"project":"foo","config":"Debug"},{"project":"bar","config":"Release"}]}'
-
-    job2:
-        needs: job1
-        runs-on: ubuntu-latest
-        strategy:
-            matrix: ${{fromJson(needs.job1.outputs.matrix)}}
-        steps:
-            -   run: echo ${{matrix.project}}
-            -   run: echo ${{matrix.config}}
-
     setup-build-matrix:
         runs-on: ubuntu-latest
-        env:
-            ENVIRONMENT: ${{ github.event.inputs.envName || 'dev' }}
         outputs:
             matrix: ${{ steps.set-matrix.outputs.matrix }}
         steps:
-            -   uses: actions/checkout@v2
-            -   name: echo github inputs
-                run: echo '${{ toJSON(github.event.inputs) }}'
-
             -   name: notice
                 run: |
                     echo "::notice ::environment: ${{github.event.inputs.runners}}"
                     echo "::notice ::tag: ${{github.event.inputs.tag}}"
 
+            -   name: echo json
+                run: |
+                    echo 'RUNNER_CONFIG={"include": [{"runner": "inhouse-deploy","solver_folder": "/sharedssd/tidy3d_solver"},{"runner": "bos-inhouse-deploy","solver_folder": "/shared_data/tidy3d","cuda":"/usr/local/cuda/bin","mpi": "/opt/mvapich2/gdr/2.3.6/no-mpittool/no-openacc/cuda11.3/mofed5.4/mpirun/gnu8.4.1/bin"},{"runner": "gcloud-deploy","solver_folder": "/sharedssd/tidy3d","cuda":"/usr/local/cuda/bin"},{"runner": "oracle-deploy","solver_folder": "/sharedssd/tidy3d","cuda":"/usr/local/cuda/bin","mpi": "/opt/mvapich2/gdr/2.3.7pre/no-mpittool/no-openacc/cuda11.4/mofed5.5/mpirun/gnu9.3.0/bin"},{"runner": "aws-deploy","solver_folder": "/shared_data/tidy3d","cuda":"/usr/local/cuda/bin"}]}' >> $GITHUB_ENV
+
             -   id: set-matrix
                 run: |
-                    echo '::set-output name=matrix::{"include": [{"runner": "inhouse-deploy","solver_folder": "/sharedssd/tidy3d_solver"},{"runner": "bos-inhouse-deploy","solver_folder": "/shared_data/tidy3d","cuda":"/usr/local/cuda/bin","mpi": "/opt/mvapich2/gdr/2.3.6/no-mpittool/no-openacc/cuda11.3/mofed5.4/mpirun/gnu8.4.1/bin"},{"runner": "gcloud-deploy","solver_folder": "/sharedssd/tidy3d","cuda":"/usr/local/cuda/bin"},{"runner": "oracle-deploy","solver_folder": "/sharedssd/tidy3d","cuda":"/usr/local/cuda/bin","mpi": "/opt/mvapich2/gdr/2.3.7pre/no-mpittool/no-openacc/cuda11.4/mofed5.5/mpirun/gnu9.3.0/bin"},{"runner": "aws-deploy","solver_folder": "/shared_data/tidy3d","cuda":"/usr/local/cuda/bin"}]}'
+                    if [[ "${{ github.event.inputs.runners }}" == '' ]]; then
+                        echo '::set-output name=matrix::${{env.RUNNER_CONFIG}}'
+                    else
+                      jq -c '.include' ${{env.RUNNER_CONFIG }} | while read i; do
+                      runner=$(echo $i | jq -r '.runner')
+                      echo $runner
+                      if [ "$version" == "$target_version" ]; then
+                        folder=$(echo $i | jq -r '.folder')
+                        if [ "${version:0:7}" == 'tidy3d-' ]; then
+                          tag_version="v${version:7}"
+                          echo "clone $tag_version to $folder"
+                          echo "FOLDER=$folder" >>$GITHUB_ENV
+                          git clone https://$GH\_ACCESS\_TOKEN@github.com/flexcompute/tidy3d.git "./$folder/$version"
+                          exit 0
+                        else
+                          echo "version does not start with tidy3d-"
+                          exit 1
+                        fi
+                      fi
+                    done
+                        echo '::set-output name=matrix::{'
+                    fi
 
     output-matrix:
         needs: [ setup-build-matrix ]
-        runs-on: ubuntu-latest
+        runs-on: ${{ matrix.runner }}
         environment: ${{ github.event.inputs.envName || 'dev' }}
         strategy:
             matrix: ${{fromJson(needs.setup-build-matrix.outputs.matrix)}}
