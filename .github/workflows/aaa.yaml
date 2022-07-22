@@ -74,12 +74,12 @@ jobs:
                 if: ${{ github.event.inputs.tag }}
                 run: |
                     tag=$(echo ${{ github.event.inputs.tag }} | rev | cut -d/ -f1 | rev)
-                    echo "GIT_TAG=$tag" >> $GITHUB_ENV
-                    echo "REPO_TAG=$tag" >> $GITHUB_ENV
+                    #echo "GIT_TAG=$tag" >> $GITHUB_ENV
+                    #echo "REPO_TAG=$tag" >> $GITHUB_ENV
                     echo "BUILD_VERSION=$tag" >> $GITHUB_ENV
-                    git_hash=$(git rev-parse --short HEAD)
-                    echo "GIT_SHORT_SHA=$git_hash" >> $GITHUB_ENV
-                    echo "GIT_BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+                    #git_hash=$(git rev-parse --short HEAD)
+                    #echo "GIT_SHORT_SHA=$git_hash" >> $GITHUB_ENV
+                    #echo "GIT_BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
             -   name: Setup cuda-bin
                 if: ${{ matrix.cuda }}
