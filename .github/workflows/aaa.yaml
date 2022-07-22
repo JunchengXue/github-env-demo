@@ -47,11 +47,11 @@ jobs:
 
             -   id: set-matrix
                 run: |
-                    echo '::set-output name=matrix::{"include":[{"runner":"inhouse","solver_folder":"\\sharedssd\\sfs"},{"runner":"boston","solver_folder":"\\asf\\abc"}]}'
+                    echo '::set-output name=matrix::{"include":[{"runner":"inhouse-deploy","solver_folder":"/sharedssd/tidy3d_solver"},{"runner":"boston","solver_folder":"\\asf\\abc"}]}'
 
     output-matrix:
         needs: [ setup-build-matrix ]
-        runs-on: ubuntu-latest
+        runs-on: ${{ matrix.runner }}
         environment: ${{ github.event.inputs.envName || 'dev' }}
         strategy:
             matrix: ${{fromJson(needs.setup-build-matrix.outputs.matrix)}}
@@ -60,6 +60,8 @@ jobs:
                run: |
                    echo "${{ matrix.runner }}"
                    echo "${{ matrix.solver_folder }}"
+            
+            
 
 
 #    config-aws:
