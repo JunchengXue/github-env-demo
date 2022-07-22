@@ -11,52 +11,67 @@ on:
                 required: false
 
 jobs:
-
-    setup-build-matrix:
+    job1:
         runs-on: ubuntu-latest
-        env:
-            ENVIRONMENT: ${{ github.event.inputs.envName || 'dev' }}
         outputs:
             matrix: ${{ steps.set-matrix.outputs.matrix }}
-            json_var: ${{ steps.set-.outputs.json_var}}
         steps:
-            -   uses: actions/checkout@v2
-            -   name: echo github inputs
-                run: echo '${{ toJSON(github.event.inputs) }}'
-
-            -   name: notice
-                run: |
-                    echo "::notice ::environment: ${{github.event.inputs.runners}}"
-                    echo "::notice ::tag: ${{github.event.inputs.tag}}"
-
             -   id: set-matrix
-                run: |
-                    if [[ "${{ github.event.inputs.runners }}" != '' ]]; then
-                        echo "github input project: ${{ github.event.inputs.runners }}"
-                        runners="${{ github.event.inputs.runners }}"
-                        groups=$(echo -n $runners | jq -cRs 'split(";")')
-                        echo "::set-output name=matrix::$groups"
-                        echo "::notice ::projects: $groups"
-                    else
-                        echo "::set-output name=matrix::${{toJSON(steps.filter.outputs.changes)}}"
-                        echo "::notice ::projects: ${{toJSON(steps.filter.outputs.changes)}}"
-                    fi
-            -   id: set-json
-                run: |
-                    echo ::set-output name=json_var::[{\"name\": \"test\",\"client_payload\": \"111\"},{\"name\": \"test2\",\"client_payload\": \"222\"}]
+                run: echo "::set-output name=matrix::{\"include\":[{\"project\":\"foo\",\"config\":\"Debug\"},{\"project\":\"bar\",\"config\":\"Release\"}]}"
 
-    output-matrix:
-        needs: [ setup-build-matrix ]
+    job2:
+        needs: job1
         runs-on: ubuntu-latest
-        environment: ${{ github.event.inputs.envName || 'dev' }}
         strategy:
-            matrix:
-                project: ${{fromJson(needs.setup-build-matrix.outputs.matrix)}}
-                json: ${{fromJson(needs.setup-build-matrix.outputs.json_var )}}
+            matrix: ${{fromJson(needs.job1.outputs.matrix)}}
         steps:
-            -  name: echo
-               run: |
-                   echo "${{ matrix.project }}"
+            -   run: echo hello
+
+#    setup-build-matrix:
+#        runs-on: ubuntu-latest
+#        env:
+#            ENVIRONMENT: ${{ github.event.inputs.envName || 'dev' }}
+#        outputs:
+#            matrix: ${{ steps.set-matrix.outputs.matrix }}
+#            json_var: ${{ steps.set-.outputs.json_var}}
+#        steps:
+#            -   uses: actions/checkout@v2
+#            -   name: echo github inputs
+#                run: echo '${{ toJSON(github.event.inputs) }}'
+#
+#            -   name: notice
+#                run: |
+#                    echo "::notice ::environment: ${{github.event.inputs.runners}}"
+#                    echo "::notice ::tag: ${{github.event.inputs.tag}}"
+#
+#            -   id: set-matrix
+#                run: |
+#                    if [[ "${{ github.event.inputs.runners }}" != '' ]]; then
+#                        echo "github input project: ${{ github.event.inputs.runners }}"
+#                        runners="${{ github.event.inputs.runners }}"
+#                        groups=$(echo -n $runners | jq -cRs 'split(";")')
+#                        echo "::set-output name=matrix::$groups"
+#                        echo "::notice ::projects: $groups"
+#                    else
+#                        echo "::set-output name=matrix::${{toJSON(steps.filter.outputs.changes)}}"
+#                        echo "::notice ::projects: ${{toJSON(steps.filter.outputs.changes)}}"
+#                    fi
+#            -   id: set-json
+#                run: |
+#                    echo ::set-output name=json_var::[{\"name\": \"test\",\"client_payload\": \"111\"},{\"name\": \"test2\",\"client_payload\": \"222\"}]
+#
+#    output-matrix:
+#        needs: [ setup-build-matrix ]
+#        runs-on: ubuntu-latest
+#        environment: ${{ github.event.inputs.envName || 'dev' }}
+#        strategy:
+#            matrix:
+#                project: ${{fromJson(needs.setup-build-matrix.outputs.matrix)}}
+#                json: ${{fromJson(needs.setup-build-matrix.outputs.json_var )}}
+#        steps:
+#            -  name: echo
+#               run: |
+#                   echo "${{ matrix.project }}"
 
 
 #    config-aws:
