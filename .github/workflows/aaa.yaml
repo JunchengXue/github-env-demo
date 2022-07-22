@@ -91,6 +91,7 @@ jobs:
 #            -   name: create folder for solver version
 #                run: mkdir -p ${{matrix.solver_folder}}/${{ env.BUILD_VERSION }}
 #
-#            -   name: Build
-#                if: ${{ steps.get_version.outputs.VERSION != ''}}
+            -   name: Build
+                if: ${{ env.BUILD_VERSION }}
+                run: echo "hello"
 #                run: bash scripts/build_release.sh ${{matrix.solver_folder}}/${{ env.BUILD_VERSION }}
