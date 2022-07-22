@@ -56,7 +56,7 @@ jobs:
                 name: checkout HEAD
                 if: ${{ !github.event.inputs.tag }}
                 with:
-                    token: ${{ secrets.ACCESS_TOKEN }}
+#                    token: ${{ secrets.ACCESS_TOKEN }}
                     submodules: recursive
 
             -   uses: actions/checkout@v3
@@ -64,7 +64,7 @@ jobs:
                 if: ${{ github.event.inputs.tag }}
                 with:
                     submodules: recursive
-                    token: ${{ secrets.ACCESS_TOKEN }}
+#                    token: ${{ secrets.ACCESS_TOKEN }}
                     ref: refs/tags/${{ github.event.inputs.tag }}
 
             -   name: create version label for git tag
