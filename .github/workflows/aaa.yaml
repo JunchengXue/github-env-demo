@@ -67,7 +67,7 @@ jobs:
                 if: ${{ github.event.inputs.tag }}
                 with:
                     submodules: recursive
-                    token: ${{ secrets.ACCESS_TOKEN }}
+#                    token: ${{ secrets.ACCESS_TOKEN }}
                     ref: refs/tags/${{ github.event.inputs.tag }}
 
             -   name: create version label for git tag
