@@ -22,50 +22,13 @@ jobs:
 
             -   id: set-matrix
                 run: |
-                    if [[ "${{ github.event.inputs.runners }}" != '' ]]; then
+                    f [[ "${{ github.event.inputs.runners }}" == 'all' ]]; then
+                        echo '::set-output name=matrix::["inhouse-deploy,dev","inhouse-deploy,prod","bos-inhouse-deploy","gcloud-deploy","oracle-deploy","aws-deploy"]'
+                    else
                         runners="${{ github.event.inputs.runners }}"
                         groups=$(echo -n $runners | jq -cRs 'split(";")')
-                        echo "?????"
-                        echo $groups
                         echo "::set-output name=matrix::$groups"
-                    else
-                        echo "++++++??"
-                        echo '::set-output name=matrix::["inhouse-deploy","bos-inhouse-deploy","gcloud-deploy","oracle-deploy","aws-deploy"]'
                     fi
-#            -   id: set-matrix
-#                run: |
-#                    echo '::set-output name=matrix::[["inhouse-deploy","dev"],"bos-inhouse-deploy","oracle-deploy"]'
-
-    #            -   name: echo json
-    #                run: |
-    #                    echo 'RUNNER_CONFIG={"include": [{"runner": "inhouse-deploy","solver_folder": "/sharedssd/tidy3d_solver"},{"runner": "bos-inhouse-deploy","solver_folder": "/shared_data/tidy3d","cuda":"/usr/local/cuda/bin","mpi": "/opt/mvapich2/gdr/2.3.6/no-mpittool/no-openacc/cuda11.3/mofed5.4/mpirun/gnu8.4.1/bin"},{"runner": "gcloud-deploy","solver_folder": "/sharedssd/tidy3d","cuda":"/usr/local/cuda/bin"},{"runner": "oracle-deploy","solver_folder": "/sharedssd/tidy3d","cuda":"/usr/local/cuda/bin","mpi": "/opt/mvapich2/gdr/2.3.7pre/no-mpittool/no-openacc/cuda11.4/mofed5.5/mpirun/gnu9.3.0/bin"},{"runner": "aws-deploy","solver_folder": "/shared_data/tidy3d","cuda":"/usr/local/cuda/bin"}]}' >> $GITHUB_ENV
-    #
-
-    #            -   id: set-matrix
-    #                run: |
-    #                    if [[ "${{ github.event.inputs.runners }}" == '' ]]; then
-    #                        echo '::set-output name=matrix::${{env.RUNNER_CONFIG}}'
-    #                    else
-    #                      jq -c '.include' ${{env.RUNNER_CONFIG }} | while read i; do
-    #                      runner=$(echo $i | jq -r '.runner')
-    #                      echo $runner
-    #                      echo '::set-output name=matrix::${{env.RUNNER_CONFIG}}'
-    #
-    #
-    #                      if [ "$version" == "$target_version" ]; then
-    #                        folder=$(echo $i | jq -r '.folder')
-    #                        if [ "${version:0:7}" == 'tidy3d-' ]; then
-    #                          tag_version="v${version:7}"
-    #                          echo "clone $tag_version to $folder"
-    #                          echo "FOLDER=$folder" >>$GITHUB_ENV
-    #                          git clone https://$GH\_ACCESS\_TOKEN@github.com/flexcompute/tidy3d.git "./$folder/$version"
-    #                          exit 0
-    #                        else
-    #                          echo "version does not start with tidy3d-"
-    #                          exit 1
-    #                        fi
-    #                      fi
-    #                    fi
 
     output-matrix:
         needs: [ setup-build-matrix ]
@@ -73,12 +36,10 @@ jobs:
         strategy:
             matrix:
                 runner: ${{fromJson(needs.setup-build-matrix.outputs.matrix)}}
-
         steps:
-            -   run: echo ${{ matrix.runner }}
-            -   run: |
-                    echo 'RUNNER_CONFIG=[{"runner": "inhouse-deploy","solver_folder": "/sharedssd/tidy3d_solver"},{"runner": "bos-inhouse-deploy","solver_folder": "/shared_data/tidy3d","cuda":"/usr/local/cuda/bin","mpi": "/opt/mvapich2/gdr/2.3.6/no-mpittool/no-openacc/cuda11.3/mofed5.4/mpirun/gnu8.4.1/bin"},{"runner": "gcloud-deploy","solver_folder": "/sharedssd/tidy3d","cuda":"/usr/local/cuda/bin"},{"runner": "oracle-deploy","solver_folder": "/sharedssd/tidy3d","cuda":"/usr/local/cuda/bin","mpi": "/opt/mvapich2/gdr/2.3.7pre/no-mpittool/no-openacc/cuda11.4/mofed5.5/mpirun/gnu9.3.0/bin"},{"runner": "aws-deploy","solver_folder": "/shared_data/tidy3d","cuda":"/usr/local/cuda/bin"}]' >> $GITHUB_ENV
 
+            -   run: |
+                    echo 'RUNNER_CONFIG=[{"runner": "inhouse-deploy,dev","solver_folder": "/sharedssd/tidy3d_solver"},{"runner": "inhouse-deploy,prod","solver_folder": "/sharedssd/tidy3d_solver"},{"runner": "bos-inhouse-deploy","solver_folder": "/shared_data/tidy3d","cuda":"/usr/local/cuda/bin","mpi": "/opt/mvapich2/gdr/2.3.6/no-mpittool/no-openacc/cuda11.3/mofed5.4/mpirun/gnu8.4.1/bin"},{"runner": "gcloud-deploy","solver_folder": "/sharedssd/tidy3d","cuda":"/usr/local/cuda/bin"},{"runner": "oracle-deploy","solver_folder": "/sharedssd/tidy3d","cuda":"/usr/local/cuda/bin","mpi": "/opt/mvapich2/gdr/2.3.7pre/no-mpittool/no-openacc/cuda11.4/mofed5.5/mpirun/gnu9.3.0/bin"},{"runner": "aws-deploy","solver_folder": "/shared_data/tidy3d","cuda":"/usr/local/cuda/bin"}]' >> $GITHUB_ENV
             -   run: |
                     target_runner=${{matrix.runner}}
                     echo '${{env.RUNNER_CONFIG}}' | jq -c '.[]' | while read i; do
@@ -86,12 +47,10 @@ jobs:
                         if [ "$runner" == "$target_runner" ]; then
                             mpi=$(echo $i | jq -r '.mpi')
                             cuda=$(echo $i | jq -r '.cuda')
-                            echo "$mpi"
-                            echo "$cuda"
+                            echo "MPI_BIN=$mpi" >> $GITHUB_ENV
+                            echo "CUDA_BIN=$cuda" >> $GITHUB_ENV
                         fi
                     done
-
-
             -   uses: actions/checkout@v3
                 name: checkout HEAD
                 if: ${{ !github.event.inputs.tag }}
@@ -119,10 +78,10 @@ jobs:
                     #echo "GIT_BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
             -   name: Setup cuda-bin
-                if: ${{ matrix.cuda }}
+                if: ${{ matrix.CUDA_BIN }}
                 run: echo "${{matrix.cuda}}" >> $GITHUB_PATH
             -   name: Setup mpi-bin
-                if: ${{ matrix.mpi }}
+                if: ${{ env.MPI_BIN }}
                 run: echo "${{matrix.mpi}}" >> $GITHUB_PATH
 
             -   name: create folder for solver version
