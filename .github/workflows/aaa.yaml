@@ -69,13 +69,22 @@ jobs:
 
     output-matrix:
         needs: [ setup-build-matrix ]
-        runs-on: ${{ matrix.runner }}
+        runs-on: ubuntu-latest
         environment: ${{ github.event.inputs.envName || 'dev' }}
         strategy:
             matrix:
                 runner: ${{fromJson(needs.setup-build-matrix.outputs.matrix)}}
         steps:
             -   run: echo ${{ matrix.runner }}
+            -   run: |
+                    echo 'RUNNER_CONFIG={"include": [{"runner": "inhouse-deploy","solver_folder": "/sharedssd/tidy3d_solver"},{"runner": "bos-inhouse-deploy","solver_folder": "/shared_data/tidy3d","cuda":"/usr/local/cuda/bin","mpi": "/opt/mvapich2/gdr/2.3.6/no-mpittool/no-openacc/cuda11.3/mofed5.4/mpirun/gnu8.4.1/bin"},{"runner": "gcloud-deploy","solver_folder": "/sharedssd/tidy3d","cuda":"/usr/local/cuda/bin"},{"runner": "oracle-deploy","solver_folder": "/sharedssd/tidy3d","cuda":"/usr/local/cuda/bin","mpi": "/opt/mvapich2/gdr/2.3.7pre/no-mpittool/no-openacc/cuda11.4/mofed5.5/mpirun/gnu9.3.0/bin"},{"runner": "aws-deploy","solver_folder": "/shared_data/tidy3d","cuda":"/usr/local/cuda/bin"}]}' >> $GITHUB_ENV
+
+            -   run: |
+                    
+                    jq -c '.[]' ${{ env.RUNNER_CONFIG }}  | while read i; do
+                      echo $i
+                    done
+
 
             -   uses: actions/checkout@v3
                 name: checkout HEAD
