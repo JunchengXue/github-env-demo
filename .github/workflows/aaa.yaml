@@ -22,7 +22,7 @@ jobs:
 
             -   id: set-matrix
                 run: |
-                    f [[ "${{ github.event.inputs.runners }}" == 'all' ]]; then
+                    f [[ "${{ github.event.inputs.runners }}" == "all" ]]; then
                         echo '::set-output name=matrix::["inhouse-deploy,dev","inhouse-deploy,prod","bos-inhouse-deploy","gcloud-deploy","oracle-deploy","aws-deploy"]'
                     else
                         runners="${{ github.event.inputs.runners }}"
