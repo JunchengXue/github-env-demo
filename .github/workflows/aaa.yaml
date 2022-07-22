@@ -33,9 +33,9 @@ jobs:
                         echo "++++++??"
                         echo '::set-output name=matrix::[["inhouse-deploy","dev"],"bos-inhouse-deploy","oracle-deploy"]'
                     fi
-            -   id: set-matrix
-                run: |
-                    echo '::set-output name=matrix::[["inhouse-deploy","dev"],"bos-inhouse-deploy","oracle-deploy"]'
+#            -   id: set-matrix
+#                run: |
+#                    echo '::set-output name=matrix::[["inhouse-deploy","dev"],"bos-inhouse-deploy","oracle-deploy"]'
 
     #            -   name: echo json
     #                run: |
