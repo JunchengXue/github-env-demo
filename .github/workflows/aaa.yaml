@@ -93,5 +93,5 @@ jobs:
 #
             -   name: Build
                 if: ${{ env.BUILD_VERSION }}
-                run: echo "hello"
+                run: echo "${{env.BUILD_VERSION}}"
 #                run: bash scripts/build_release.sh ${{matrix.solver_folder}}/${{ env.BUILD_VERSION }}
