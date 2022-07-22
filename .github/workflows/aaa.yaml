@@ -81,7 +81,7 @@ jobs:
 
             -   run: |
                     
-                    jq -c '.[]' '${{ env.RUNNER_CONFIG }}  | while read i; do
+                    jq -c '.[]' '${{ env.RUNNER_CONFIG }}'  | while read i; do
                       echo $i
                     done
 
