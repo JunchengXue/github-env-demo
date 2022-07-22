@@ -43,7 +43,7 @@ jobs:
                     fi
             -   id: set-json
                 run: |
-                    echo ::set-output name=json_var::'[{ "name": "test", "client_payload": "111" }, { "name": "test2", "client_payload": "222" }] '
+                    echo ::set-output name=json_var::[{\"name\": \"test\",\"client_payload\": \"111\"},{\"name\": \"test2\",\"client_payload\": \"222\"}]
 
     output-matrix:
         needs: [ setup-build-matrix ]
