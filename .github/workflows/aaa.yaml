@@ -54,8 +54,7 @@ jobs:
         runs-on: ubuntu-latest
         environment: ${{ github.event.inputs.envName || 'dev' }}
         strategy:
-            matrix:
-                project: ${{fromJson(needs.setup-build-matrix.outputs.matrix)}}
+            matrix: ${{fromJson(needs.setup-build-matrix.outputs.matrix)}}
         steps:
             -  name: echo
                run: |
