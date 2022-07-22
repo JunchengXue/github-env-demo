@@ -25,7 +25,7 @@ jobs:
                 run: |
                     if [[ "${{ github.event.inputs.runners }}" != '' ]]; then
                         runners="${{ github.event.inputs.runners }}"
-                        groups=$(echo -n $versions | jq -cRs 'split(";")')
+                        groups=$(echo -n $runners | jq -cRs 'split(";")')
                         echo "?????"
                         echo $groups
                         echo "::set-output name=matrix::$groups"
