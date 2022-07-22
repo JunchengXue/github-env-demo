@@ -30,7 +30,7 @@ jobs:
                         echo "::set-output name=matrix::$groups"
                     else
                         echo "++++++??"
-                        echo '::set-output name=matrix::[["inhouse-deploy","dev"],"bos-inhouse-deploy","oracle-deploy"]'
+                        echo '::set-output name=matrix::["inhouse-deploy","bos-inhouse-deploy","gcloud-deploy","oracle-deploy","aws-deploy"]'
                     fi
 #            -   id: set-matrix
 #                run: |
@@ -83,8 +83,11 @@ jobs:
                     target_runner=${{env.runner}}
                     echo '${{env.RUNNER_CONFIG}}' | jq -c '.[]' | while read i; do
                         runner=$(echo $i | jq -r '.runner')
-                        if [ "$version" == "$target_version" ]; then
-                    
+                        if [ "$runner" == "$target_runner" ]; then
+                            mpi=$(echo $i | jq -r '.mpi')
+                            cuda=$(echo $i | jq -r '.cuda')
+                            echo "$mpi"
+                            echo "$cuda"
                         fi
                     done
 
