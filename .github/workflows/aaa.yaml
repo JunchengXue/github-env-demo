@@ -25,7 +25,8 @@ jobs:
         strategy:
             matrix: ${{fromJson(needs.job1.outputs.matrix)}}
         steps:
-            -   run: echo hello
+            -   run: echo ${{matrix.project}}
+            -   run: echo ${{matrix.config}}
 
 #    setup-build-matrix:
 #        runs-on: ubuntu-latest
