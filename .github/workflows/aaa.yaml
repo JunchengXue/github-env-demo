@@ -35,7 +35,6 @@ jobs:
             ENVIRONMENT: ${{ github.event.inputs.envName || 'dev' }}
         outputs:
             matrix: ${{ steps.set-matrix.outputs.matrix }}
-            json_var: ${{ steps.set-.outputs.json_var}}
         steps:
             -   uses: actions/checkout@v2
             -   name: echo github inputs
@@ -48,19 +47,7 @@ jobs:
 
             -   id: set-matrix
                 run: |
-                    if [[ "${{ github.event.inputs.runners }}" != '' ]]; then
-                        echo "github input project: ${{ github.event.inputs.runners }}"
-                        runners="${{ github.event.inputs.runners }}"
-                        groups=$(echo -n $runners | jq -cRs 'split(";")')
-                        echo "::set-output name=matrix::$groups"
-                        echo "::notice ::projects: $groups"
-                    else
-                        echo "::set-output name=matrix::${{toJSON(steps.filter.outputs.changes)}}"
-                        echo "::notice ::projects: ${{toJSON(steps.filter.outputs.changes)}}"
-                    fi
-            -   id: set-json
-                run: |
-                    echo "::set-output name=matrix::{\"include\":[{\"runner\":\"inhouse\",\"solver_folder\":\"\sharedssd\"},{\"runner\":\"boston\",\"solver_folder\":\"\shared_data\sfs\asfd\"}]}"
+                    echo '::set-output name=matrix::{\"include\":[{"runner":"inhouse","solver_folder":"\sharedssd"},{"runner":"boston","solver_folder":"\shared_data\sfs\asfd"}]}'
 
     output-matrix:
         needs: [ setup-build-matrix ]
@@ -69,11 +56,11 @@ jobs:
         strategy:
             matrix:
                 project: ${{fromJson(needs.setup-build-matrix.outputs.matrix)}}
-                json: ${{fromJson(needs.setup-build-matrix.outputs.json_var )}}
         steps:
             -  name: echo
                run: |
-                   echo "${{ matrix.project }}"
+                   echo "${{ matrix.runner }}"
+                   echo "${{ matrix.solver_folder }}"
 
 
 #    config-aws:
