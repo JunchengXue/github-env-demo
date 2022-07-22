@@ -87,11 +87,11 @@ jobs:
                     echo "/usr/local/cuda/bin" >> $GITHUB_PATH
                     echo "TIDY3D_PYTHON=/opt/python3.10/bin" >> $GITHUB_ENV
 
-            -   run: echo $GITHUB_PATH
+            -   run: echo "$GITHUB_PATH"
 
-            -   name: create folder for solver version
-                run: mkdir -p ${{matrix.solver_folder}}/${{ env.BUILD_VERSION }}
-
-            -   name: Build
-                if: ${{ steps.get_version.outputs.VERSION != ''}}
-                run: bash scripts/build_release.sh ${{matrix.solver_folder}}/${{ env.BUILD_VERSION }}
+#            -   name: create folder for solver version
+#                run: mkdir -p ${{matrix.solver_folder}}/${{ env.BUILD_VERSION }}
+#
+#            -   name: Build
+#                if: ${{ steps.get_version.outputs.VERSION != ''}}
+#                run: bash scripts/build_release.sh ${{matrix.solver_folder}}/${{ env.BUILD_VERSION }}
